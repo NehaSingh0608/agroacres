@@ -236,11 +236,7 @@ def searchcrop(request):
         data4 = Season.objects.filter(name__icontains = query)
 
         ctx = {'query':query,'results1': data1, 'results2': data2 , 'results3': data3, 'results4': data4}
-       
     
-
-
-
     else:
         ctx = {"message": "No query is given"}
 
@@ -258,49 +254,30 @@ def add_to_cart(request,seedpk):
 @login_required
 def view_cart(request):
     cart = Cart.objects.filter(user__pk=request.user.pk)
+    public_key = settings.STRIPE_PUBLIC_KEY
     # print("test",cart)
-    ctx={'cart':cart}
+    ctx={'cart':cart, 'pub_key': public_key}
     return render(request,'users/view_cart.html',ctx)
 
-class LandingPageCart(LoginRequiredMixin, TemplateView):
-    template_name = "users/purchase.html"
-
-    def get_context_data(self, **kwargs):
-        # cart_id = request.user
-        amt_id = self.kwargs["amt"]
-        # print(amt_id)
-        cart = Cart.objects.all()
-        contxt = super(LandingPageCart,self).get_context_data(**kwargs)
-        contxt.update({
-            "cart": cart,
-            "amt":amt_id,
-            "STRIPE_PUBLIC_KEY": settings.STRIPE_PUBLIC_KEY
-        })
-
-        return contxt
 
 class CheckoutViewCart(LoginRequiredMixin, TemplateView): 
     
     def post(self, *args, **kwargs):
 
-        amt_id = self.kwargs["price"]
-        price = amt_id*100
+        amt_id = self.request.GET.get('p')
+        price = int(amt_id)*100
         print('amount: ', amt_id)
         YOUR_DOMAIN = "http://127.0.0.1:8000"
 
         checkout_session =stripe.checkout.Session.create(
             payment_method_types = ['card'],
             line_items = [
-                {
-                     
+                {                  
                         'name':'Cart Purchase',
                         'quantity':1,
                         'currency':'inr',
-                        'amount': int(price),
-                    
+                        'amount': price,  
                 },
-
-
             ],
             mode = 'payment',
             success_url = YOUR_DOMAIN+'/success',
@@ -310,23 +287,6 @@ class CheckoutViewCart(LoginRequiredMixin, TemplateView):
             'id': checkout_session.id
         })
 
-
-# class LandingPageCart(LoginRequiredMixin, TemplateView):
-
-#     template_name = "users/payment.html"
-
-  
-#     def get_context_data( self,**kwargs):
-#         # user = request.user
-#         product_id = self.kwargs["pk"]
-#         product = Purchase.objects.get(pk=product_id)
-#         context = super(LandingPage,self).get_context_data(**kwargs)
-#         context.update({
-#             "product":product,
-#             "STRIPE_PUBLIC_KEY": settings.STRIPE_PUBLIC_KEY
-#         })
-
-#         return context
 
 def season(request):
     

@@ -62,9 +62,9 @@
                 'X-CSRFToken': csrftoken,
         
             },
-            // body: {
-            //     'amount': JSON.stringify(price)
-            // }
+            body: {
+                'amt': "amt"+price
+            }
         })
             .then(function (response) {
             //  console.log(response);

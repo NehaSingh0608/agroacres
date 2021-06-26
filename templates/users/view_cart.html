@@ -6,13 +6,10 @@
 {% block css %}
 <style>
     body {
-        
-        
         background-image: url("https://images.unsplash.com/flagged/photo-1601316587579-187125db32c8?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80");
         background-repeat: no-repeat;
         background-size: cover;
     }
-    
     .alert-danger ul {
         list-style: none;
         padding-left: 0;
@@ -29,11 +26,11 @@
 
 {% block content %}
 <div class="container my-5">
+    {% csrf_token %}
     <table class="table table-inversed bg-light">
         <thead>
             
             <tr>
-                
                 <th>Product Image</th>
                 <th>Seed</th>
                 <th>base price</th>
@@ -80,28 +77,31 @@
         <tfoot>
             <tr>
                 <td colspan="4"><b>Total Price</b></td>
-                <th>Rs. <span class="totalamt">0.00</span></th>
+                <th>Rs. <span class="totalamt" id="totalprice">0.00</span></th>
             </tr>
             <tr>
                 <td colspan="4"></td>
-                <td><a class="pay btn btn-danger btn-sm btn-block">Buy now</button></td>
+                <td>
+                <!-- a class="pay btn btn-danger btn-sm btn-block">Buy now</button> -->
+                    
+                </td>
                 </tr>
             </tfoot>
         </table>
+        <button type="button" class=" btn-danger btn-sm  " id="checkout-button">Checkout</button>
     </div>
     {% endblock %}
     
     {% block js %}
+
     <script>
-        $(function () {
+            $(function () {
             // document.querySelector("body > div > table > tbody > tr.\\31 3 > td:nth-child(5)")
             var total = 0.00
             $('.calcprice').each(function(i,v){
                 total+=parseInt(v.innerHTML)
             });
-            url = "{% url 'paycart' 0 %}"
-            url = url.replace(0,total)
-            $('.pay').attr('href',url)
+            
             
             $(".totalamt").text(total)
             
@@ -114,12 +114,55 @@
                     total+=parseInt(v.innerHTML)
                 });
                 $(".totalamt").text(total)
-                url = "{% url 'paycart' 0 %}"
-                url = url.replace(0,total)
-                $('.pay').attr('href',url)
+                
             });
             
             
         });
-    </script>    
+    </script>
+
+<script>
+    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    // Create an instance of the Stripe object with your publishable API key
+    var stripe = Stripe("{{ pub_key }}");
+   
+    var checkoutButton = document.getElementById("checkout-button");
+    checkoutButton.addEventListener("click", function () {
+
+    var price = parseFloat(document.querySelector('#totalprice').innerHTML);
+    console.log(price);
+    fetch("{% url 'checkoutcart'  %}?p=" + price, {
+        method: "POST",
+        headers: {
+            
+            'X-CSRFToken': csrftoken,
+    
+        },
+    })
+        .then(function (response) {
+        //  console.log(response);
+            return response.json();
+        })
+        .then(function (session) {
+        return stripe.redirectToCheckout({ sessionId: session.id });
+        })
+        .then(function (result) {
+        // If redirectToCheckout fails due to a browser or network
+        // error, you should display the localized error message to your
+        // customer using error.message.
+        if (result.error) {
+            alert(result.error.message);
+        }
+        })
+        .catch(function (error) {
+        //console.error("Error:", error);
+        setTimeout(() => {
+            console.log(error);
+            alert(error);
+        }, 1500);
+        });
+    });
+
+</script>    
+      
     {% endblock js %}

@@ -5,7 +5,7 @@ from .views import CheckoutViewCart, crop, fertilizer,edit_profile, homeview, se
 from .views import payment,LandingPage, successview, cancleview,CheckoutView
 from .views import crop, fertilizer, homeview, searchcrop,profile, contact, purchase_one,addseed, season,dashboard, soil,about,query,view_cart, training,seed,purchase,add_to_cart,allcrops
 from .views import payment
-from .views import LandingPageCart
+# from .views import LandingPageCart
 
 urlpatterns = [
     path('', homeview, name='home'),
@@ -29,7 +29,7 @@ urlpatterns = [
     path('training/',training, name='training'),
     path('query/',query, name='query'),
     path('pay/<int:pk>',LandingPage.as_view(),name='paynow'),
-    path('paycart/<int:amt>',LandingPageCart.as_view(),name='paycart'),
+    # path('paycart/<int:amt>',LandingPageCart.as_view(),name='paycart'),
     path('success/', successview.as_view(), name='success'),
     path('cancel/', cancleview.as_view(), name='cancel'),
     path('checkout/<pk>/', CheckoutView.as_view(),name='checkout'),
